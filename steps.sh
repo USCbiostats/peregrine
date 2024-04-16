@@ -14,8 +14,8 @@ echo 'venv done'
 python eQTL/eqtl.py $TARGET/eQTL
 echo 'eQTL done'
 
-# python heirarchicalTAD/heirarchicalTAD.py $TARGET/heirarchicalTAD
-# echo 'heirarchical TAD done'
+python heirarchicalTAD/heirarchicalTAD.py $TARGET/heirarchicalTAD
+echo 'heirarchical TAD done'
 
 # ./tad/tad.sh $TARGET/tad
 # echo 'TAD done'
