@@ -1,6 +1,11 @@
 from math import floor, ceil
 from pybedtools import BedTool
 from collections import defaultdict
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
 
 def bTADoverlap(input_file, output_file, cell_type):
     hash = {}
@@ -48,7 +53,7 @@ def bedtoolIntersect(gene_file, tad_order_file, output_file):
             out.write(str(elt))
 
 
-def split(file):
+def split(file, target_path):
     '''
         splits input file by chromosome and creates 25 chromosome specific files
     '''
@@ -56,7 +61,8 @@ def split(file):
     chromosomes.append('chrX')
     chromosomes.append('chrY')
 
-    output_files = {chromosome: open(chromosome + file, 'w') for chromosome in chromosomes}
+    file = os.path.basename(file)
+    output_files = {chromosome: open(os.path.join(target_path, chromosome + file), 'w') for chromosome in chromosomes}
 
     with open(file, 'r') as tad_file:
         for line in tad_file:
@@ -195,54 +201,63 @@ def orderlinks(input_file, output_file):
 
     print(f"This file contains {len(hash)} different enhancers linked to {len(genes)} genes in {len(tissues)} tissues.")
 
-panther_mapping = {}
-with open('pantherGeneList.txt', 'r') as pantherGene_file:
-    for line in pantherGene_file:
-        line_split = line.strip().split('\t')
-        panth = line_split[0]
-        ensg = line_split[1]
-        panther_mapping[ensg] = panth
-
-tissues = {}
-with open('tissuetable_10092018.txt', 'r') as tissue_file:
-    for line in tissue_file:
-        line_split = line.strip().split('\t')
-        tissueID = line_split[0]
-        tissue = line_split[1]
-        tissue = tissue.replace(' ', '_')
-        tissues[tissue] = tissueID
 
 
-bTADoverlap('ENCFF274VJU.bed', 'bTADorder', 'Caki2')
-tTADOverlap('ENCFF588KUZ.bed', 'tTADorder', 'Caki2')
+if __name__ == "__main__":
 
-bedtoolIntersect('TSSgenesbed', 'bTADorder', 'TSSbTAD')
-bedtoolIntersect('TSSgenesbed', 'tTADorder', 'TSStTAD')
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
 
-bedtoolIntersect('CREbedDBenhancers_10092018', 'bTADorder', 'enhancersbTAD')
-bedtoolIntersect('CREbedDBenhancers_10092018', 'tTADorder', 'enhancerstTAD')
+    panther_mapping = {}
+    with open('pantherGeneList.txt', 'r') as pantherGene_file:
+        for line in pantherGene_file:
+            line_split = line.strip().split('\t')
+            panth = line_split[0]
+            ensg = line_split[1]
+            panther_mapping[ensg] = panth
 
-split('TSSbTAD')
-split('enhancersbTAD')
+    tissues = {}
+    with open('tissuetable_10092018.txt', 'r') as tissue_file:
+        for line in tissue_file:
+            line_split = line.strip().split('\t')
+            tissueID = line_split[0]
+            tissue = line_split[1]
+            tissue = tissue.replace(' ', '_')
+            tissues[tissue] = tissueID
 
-chromosomes = ['chr' + str(x) for x in range(1, 23)]
-chromosomes.append('chrX')
-chromosomes.append('chrY')
-linkbTAD_list = []
 
-for chr in chromosomes:
-    TADlinks(chr+'TSSbTAD', chr+'enhancersbTAD', chr+'linksbTAD')
+    bTADoverlap('tad/ENCFF274VJU.bed', os.path.join(target_path, 'bTADorder'), 'Caki2')
+    tTADOverlap('tad/ENCFF588KUZ.bed', os.path.join(target_path, 'tTADorder'), 'Caki2')
 
-for chr in chromosomes:
-    linkbTAD_list.append(chr+'linksbTAD')
-concatenate(linkbTAD_list, 'linksbTAD')
-    
-TADlinks('TSStTAD', 'enhancerstTAD', 'linkstTAD')
+    bedtoolIntersect('tad/TSSgenesbed', os.path.join(target_path, 'bTADorder'), os.path.join(target_path, 'TSSbTAD'))
+    bedtoolIntersect('tad/TSSgenesbed', os.path.join(target_path, 'tTADorder'), os.path.join(target_path, 'TSStTAD'))
 
-tissuesReplace('linksbTAD', 'linksbTADtissues')
-tissuesReplace('linkstTAD', 'linkstTADtissues')
+    bedtoolIntersect('CREbedDBenhancers_10092018', os.path.join(target_path, 'bTADorder'), os.path.join(target_path, 'enhancersbTAD'))
+    bedtoolIntersect('CREbedDBenhancers_10092018', os.path.join(target_path, 'tTADorder'), os.path.join(target_path, 'enhancerstTAD'))
 
-concatenate(['linksbTADtissues', 'linkstTADtissues'], 'linksTADtissues')
+    split(os.path.join(target_path, 'TSSbTAD'), target_path)
+    split(os.path.join(target_path, 'enhancersbTAD'), target_path)
 
-cutdowntad('linksDBnumeqtl', 'PSYCHIClinksDB ', 'linkstTADtissues', 'selecttTAD')
-orderlinks('selectTAD', 'linksDBtad')
+    chromosomes = ['chr' + str(x) for x in range(1, 23)]
+    chromosomes.append('chrX')
+    chromosomes.append('chrY')
+    linkbTAD_list = []
+
+    for chr in chromosomes:
+        TADlinks(os.path.join(target_path, chr+'TSSbTAD'), os.path.join(target_path, chr+'enhancersbTAD'), os.path.join(target_path, chr+'linksbTAD'))
+
+    for chr in chromosomes:
+        linkbTAD_list.append(os.path.join(target_path, chr+'linksbTAD'))
+    concatenate(linkbTAD_list, os.path.join(target_path, 'linksbTAD'))
+        
+    TADlinks(os.path.join(target_path, 'TSStTAD'), os.path.join(target_path, 'enhancerstTAD'), os.path.join(target_path, 'linkstTAD'))
+
+    tissuesReplace(os.path.join(target_path, 'linksbTAD'), os.path.join(target_path, 'linksbTADtissues'))
+    tissuesReplace(os.path.join(target_path, 'linkstTAD'), os.path.join(target_path, 'linkstTADtissues'))
+
+    concatenate([os.path.join(target_path, 'linksbTADtissues'), os.path.join(target_path, 'linkstTADtissues')], os.path.join(target_path, 'linksTADtissues'))
+
+    target_path_base = target_path.split('/')[0]
+    cutdowntad(os.path.join(target_path_base + '/eQTL', 'linksDBnumeqtl'), os.path.join(target_path_base + 'heirarchicalTAD', 'PSYCHIClinksDB'), os.path.join(target_path, 'linkstTADtissues'), os.path.join(target_path, 'selecttTAD'))
+    orderlinks(os.path.join(target_path, 'selectTAD'), os.path.join(target_path, 'linksDBtad'))

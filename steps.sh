@@ -17,8 +17,8 @@ echo 'eQTL done'
 python heirarchicalTAD/heirarchicalTAD.py $TARGET/heirarchicalTAD
 echo 'heirarchical TAD done'
 
-# ./tad/tad.sh $TARGET/tad
-# echo 'TAD done'
+./tad/tad.sh $TARGET/tad
+echo 'TAD done'
 
 # cd ../chia_pet
 # python ChIA_PET.py

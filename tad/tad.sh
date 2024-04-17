@@ -1,29 +1,31 @@
-python TADorder.py
+TARGET=$1
+
+python tad/TADorder.py $TARGET
 echo 'TADorder done'
 
-python bedtoolIntersect.py
+python tad/bedtoolIntersect.py $TARGET
 echo 'bedtoolIntersect done'
 
-python split.py
+python tad/split.py $TARGET
 echo 'split done'
 
-python bTADlinks.py
+python tad/bTADlinks.py $TARGET
 echo 'bTADlinks done'
 
-python concatenate_linksbTAD.py
+python tad/concatenate_linksbTAD.py $TARGET
 echo 'concatenate_linksbTAD done'
 
-python tTADlinks.py
+python tad/tTADlinks.py $TARGET
 echo 'tTADlinks done'
 
-python linksbTAD_tissueReplace.py
+python tad/linksbTAD_tissueReplace.py $TARGET
 echo 'linksbTAD_tissueReplace done'
 
-python final_concatenate.py
+python tad/final_concatenate.py $TARGET
 echo 'final_concatenate done'
 
-python cutdowntad.py
+python tad/cutdowntad.py $TARGET
 echo 'cutdowntad done'
 
-python orderlinks.py
+python tad/orderlinks.py $TARGET
 echo 'orderlinks done'

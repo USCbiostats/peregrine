@@ -1,3 +1,9 @@
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
+
 def concatenate(input_files, output_file):
     '''
         makes a combined file for all tissues
@@ -8,11 +14,18 @@ def concatenate(input_files, output_file):
                 for line in infile:
                     outfile.write(line)
 
-chromosomes = ['chr' + str(x) for x in range(1, 23)]
-chromosomes.append('chrX')
-chromosomes.append('chrY')
-linkbTAD_list = []
+if __name__ == "__main__":
 
-for chr in chromosomes:
-    linkbTAD_list.append(chr+'linksbTAD')
-concatenate(linkbTAD_list, 'linksbTAD')
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
+
+    chromosomes = ['chr' + str(x) for x in range(1, 23)]
+    chromosomes.append('chrX')
+    chromosomes.append('chrY')
+    linkbTAD_list = []
+
+    for chr in chromosomes:
+        linkbTAD_list.append(os.path.join(target_path, chr+'linksbTAD'))
+
+    concatenate(linkbTAD_list, os.path.join(target_path, 'linksbTAD'))

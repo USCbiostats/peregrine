@@ -1,4 +1,9 @@
 from pybedtools import BedTool
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
 
 def bedtoolIntersect(gene_file, tad_order_file, output_file):
     '''
@@ -13,8 +18,14 @@ def bedtoolIntersect(gene_file, tad_order_file, output_file):
         out.write(str(elt))
     out.close()
 
-bedtoolIntersect('TSSgenesbed', 'bTADorder', 'TSSbTAD')
-bedtoolIntersect('TSSgenesbed', 'tTADorder', 'TSStTAD')
+if __name__ == "__main__":
 
-bedtoolIntersect('CREbedDBenhancers_10092018', 'bTADorder', 'enhancersbTAD')
-bedtoolIntersect('CREbedDBenhancers_10092018', 'tTADorder', 'enhancerstTAD')
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
+
+    bedtoolIntersect('tad/TSSgenesbed', os.path.join(target_path, 'bTADorder'), os.path.join(target_path, 'TSSbTAD'))
+    bedtoolIntersect('tad/TSSgenesbed', os.path.join(target_path, 'tTADorder'), os.path.join(target_path, 'TSStTAD'))
+
+    bedtoolIntersect('CREbedDBenhancers_10092018', os.path.join(target_path, 'bTADorder'), os.path.join(target_path, 'enhancersbTAD'))
+    bedtoolIntersect('CREbedDBenhancers_10092018', os.path.join(target_path, 'tTADorder'), os.path.join(target_path, 'enhancerstTAD'))

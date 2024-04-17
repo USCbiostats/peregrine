@@ -1,3 +1,9 @@
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
+
 from collections import defaultdict
 
 def TADlinks(gene_file, enhancer_tad_file, output_file):
@@ -55,22 +61,28 @@ def tissuesReplace(input_file, output_file):
                     cell = tissues.get(tiss, '')
                     out.write(f"{enhID}\t{panthID}\t{cell}\t{assay}\n")
 
-panther_mapping = {}
-with open('pantherGeneList.txt', 'r') as pantherGene_file:
-    for line in pantherGene_file:
-        line_split = line.strip().split('\t')
-        panth = line_split[0]
-        ensg = line_split[1]
-        panther_mapping[ensg] = panth
+if __name__ == "__main__":
 
-tissues = {}
-with open('tissuetable_10092018.txt', 'r') as tissue_file:
-    for line in tissue_file:
-        line_split = line.strip().split('\t')
-        tissueID = line_split[0]
-        tissue = line_split[1]
-        tissue = tissue.replace(' ', '_')
-        tissues[tissue] = tissueID
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
 
-TADlinks('TSStTAD', 'enhancerstTAD', 'linkstTAD')
-tissuesReplace('linkstTAD', 'linkstTADtissues')
+    panther_mapping = {}
+    with open('pantherGeneList.txt', 'r') as pantherGene_file:
+        for line in pantherGene_file:
+            line_split = line.strip().split('\t')
+            panth = line_split[0]
+            ensg = line_split[1]
+            panther_mapping[ensg] = panth
+
+    tissues = {}
+    with open('tissuetable_10092018.txt', 'r') as tissue_file:
+        for line in tissue_file:
+            line_split = line.strip().split('\t')
+            tissueID = line_split[0]
+            tissue = line_split[1]
+            tissue = tissue.replace(' ', '_')
+            tissues[tissue] = tissueID
+
+    TADlinks(os.path.join(target_path, 'TSStTAD'), os.path.join(target_path, 'enhancerstTAD'), os.path.join(target_path, 'linkstTAD'))
+    tissuesReplace(os.path.join(target_path, 'linkstTAD'), os.path.join(target_path, 'linkstTADtissues'))

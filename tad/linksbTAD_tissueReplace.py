@@ -1,3 +1,9 @@
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
+
 def tissuesReplace(input_file, output_file):
     '''
         Replace the tissues and cell types with their codes
@@ -11,13 +17,19 @@ def tissuesReplace(input_file, output_file):
                     cell = tissues.get(tiss, '')
                     out.write(f"{enhID}\t{panthID}\t{cell}\t{assay}\n")
 
-tissues = {}
-with open('tissuetable_10092018.txt', 'r') as tissue_file:
-    for line in tissue_file:
-        line_split = line.strip().split('\t')
-        tissueID = line_split[0]
-        tissue = line_split[1]
-        tissue = tissue.replace(' ', '_')
-        tissues[tissue] = tissueID
+if __name__ == "__main__":
 
-tissuesReplace('linksbTAD', 'linksbTADtissues')
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
+
+    tissues = {}
+    with open('tissuetable_10092018.txt', 'r') as tissue_file:
+        for line in tissue_file:
+            line_split = line.strip().split('\t')
+            tissueID = line_split[0]
+            tissue = line_split[1]
+            tissue = tissue.replace(' ', '_')
+            tissues[tissue] = tissueID
+
+    tissuesReplace(os.path.join(target_path, 'linksbTAD'), os.path.join(target_path, 'linksbTADtissues'))
