@@ -1,3 +1,9 @@
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
+
 def concatenate(input_files, output_file):
     '''
         makes a combined file for all tissues
@@ -8,4 +14,10 @@ def concatenate(input_files, output_file):
                 for line in infile:
                     outfile.write(line)
 
-concatenate(['linksbTADtissues', 'linkstTADtissues'], 'linksTADtissues')
+if __name__ == "__main__":
+
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
+
+    concatenate([os.path.join(target_path, 'linksbTADtissues'), os.path.join(target_path, 'linkstTADtissues')], os.path.join(target_path, 'linksTADtissues'))

@@ -1,3 +1,9 @@
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
+
 def cutdowntad(eqtl_file, heirarchical_tad_file, tad_file, output_file):
     '''
         only want to include the TAD links that support existing links from ChIA-PET or eQTL data
@@ -34,4 +40,11 @@ def cutdowntad(eqtl_file, heirarchical_tad_file, tad_file, output_file):
 
     print(f"Number of TAD links found in TADintxn, eQTL, or ChIA: {count1}")
 
-cutdowntad('../eQTL/linksDBnumeqtl', '../heirarchicalTAD/PSYCHIClinksDB', 'linksTADtissues', 'selectTAD')
+if __name__ == "__main__":
+
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
+
+    target_path_base = target_path.split('/')[0]
+    cutdowntad(target_path_base + '/eQTL/linksDBnumeqtl', target_path_base + '/heirarchicalTAD/PSYCHIClinksDB', os.path.join(target_path, 'linksTADtissues'), os.path.join(target_path, 'selectTAD'))

@@ -3,8 +3,9 @@
 To get the final Peregrine data which consists of enhancer-gene links run the following bash script command.
 
 ```
-./steps.sh
+./steps.sh folder_for_generated_files
 ```
+folder_for_generated_files in the above command needs to be specified by the user and this is where all the generated files would be created. 
 The above command creates a python3 virtual environment, installs all the requirements, activates the environment and then runs all the python script for eQTL, heirarchical TAD, TAD and ChIA-PET data. 
 
 This final data is coming from 4 different data sources. 

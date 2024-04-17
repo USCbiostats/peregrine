@@ -3,11 +3,15 @@ from pybedtools import BedTool
 import os
 import shutil
 import glob
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
 
 
-def idmapping_processing():
+def idmapping_processing(id_output_file):
     mapping = {}
-    with open('UP000005640_9606.idmapping', 'r') as file:
+    with open('heirarchicalTAD/UP000005640_9606.idmapping', 'r') as file:
         for line in file:
             line_split = line.strip().split('\t')
             if line_split[0] not in mapping:
@@ -26,7 +30,7 @@ def idmapping_processing():
             row = [val['HGNC'], val['Gene_Name'], key, val['Ensembl']]
             df.loc[count] = row
             count += 1
-    df.to_csv('resultsHGNC.txt', sep='\t', index=False)
+    df.to_csv(id_output_file, sep='\t', index=False)
 
 def nonegvalues(input_file, output_file, out_file):
     with open(input_file, 'r') as bed_file, open(out_file, 'w') as tossed_out, open(output_file, 'w') as out:
@@ -50,8 +54,8 @@ def bedtoolIntersect(cred_file, eqtl_file, output_file):
             out.write(str(elt))
 
 
-def HGNC2PANTH(input_file, output_file, unmatched_file, tissue_name):
-    HGNC_mapping = open('resultsHGNC.txt', 'r')
+def HGNC2PANTH(input_file, output_file, hgnc_file, unmatched_file, tissue_name):
+    HGNC_mapping = open(hgnc_file, 'r')
     lines = HGNC_mapping.readlines()
     HGNC_mapping.close()
 
@@ -137,52 +141,62 @@ def concatenate(input_files, output_file):
             outfile.write(infile.read())
             infile.close()
 
-panth = {}
-with open('pantherGeneList.txt', 'r') as panth_mapping:
-    for line in panth_mapping:
-        line_split = line.strip().split()
-        longID = line_split[0]
-        ensg = line_split[0]
-        longID_split = longID.split('|')
-        HGNC = longID_split[1]
-        uniprotkb = longID_split[2].split('=')[1]
-        panth[HGNC] = longID
-        panth[uniprotkb] = longID
-        panth[ensg] = longID
 
-tissues = {}
-with open('tissuetable_10092018.txt', 'r') as tissue_file:
-    for line in tissue_file:
-        line_split = line.strip().split('\t')
-        tissueID = line_split[0]
-        tissue = line_split[1]
-        tissue = tissue.replace(' ', '_')
-        tissues[tissue] = tissueID
+if __name__ == "__main__":
 
-idmapping_processing()
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
 
-bed_files = glob.glob(os.path.join('data', '*'))
-db_files = []
+    panth = {}
+    with open('pantherGeneList.txt', 'r') as panth_mapping:
+        for line in panth_mapping:
+            line_split = line.strip().split()
+            longID = line_split[0]
+            ensg = line_split[1]
+            longID_split = longID.split('|')
+            HGNC = longID_split[1]
+            uniprotkb = longID_split[2].split('=')[1]
+            panth[HGNC] = longID
+            panth[uniprotkb] = longID
+            panth[ensg] = longID
 
-for bed_file in bed_files:
-    bed_file_split = bed_file.split('.')
+    tissues = {}
+    with open('tissuetable_10092018.txt', 'r') as tissue_file:
+        for line in tissue_file:
+            line_split = line.strip().split('\t')
+            tissueID = line_split[0]
+            tissue = line_split[1]
+            tissue = tissue.replace(' ', '_')
+            tissues[tissue] = tissueID
 
-    folder = os.path.basename(bed_file_split[0])
-    if '_' in bed_file_split[0]:
-        folder = folder.split('_')[1]
+    id_output_file = os.path.join(target_path, 'resultsHGNC.txt')
+    # idmapping_processing(id_output_file)
 
-    tissue = os.path.basename(folder)
-    file = os.path.basename(bed_file)
-    if tissue in tissues:
-        os.mkdir(folder)
-        shutil.copy(bed_file, folder)
+    bed_files = glob.glob(os.path.join('heirarchicalTAD/data', '*'))
+    db_files = []
 
-        nonegvalues(os.path.join(folder, file), os.path.join(folder, 'nn_' + file), os.path.join(folder, 'out')) 
-        file_name = os.path.splitext(file)[0]
-        bedtoolIntersect('CREbedDBenhancers_10092018', os.path.join(folder, 'nn_' + file), os.path.join(folder, 'nn_' + file_name + '_intersect'))
-        HGNC2PANTH(os.path.join(folder, 'nn_' + file_name + '_intersect'), os.path.join(folder, file_name + '_out'), 'unmatched', tissue)
-        reformat(os.path.join(folder, file_name + '_out'), os.path.join(folder, 'intTADlinks_' + file_name))
-        tissuesReplace(os.path.join(folder, 'intTADlinks_' + file_name), os.path.join(folder,  file_name + '_DB'))
-        db_files.append(os.path.join(folder,  file_name + '_DB'))
+    for bed_file in bed_files:
+        bed_file_split = bed_file.split('.')
 
-concatenate(db_files, 'PSYCHIClinksDB')
+        folder = os.path.basename(bed_file_split[0])
+        if '_' in bed_file_split[0]:
+            folder = folder.split('_')[1]
+            
+        folder = os.path.join(target_path, folder)
+
+        tissue = os.path.basename(folder)
+        file = os.path.basename(bed_file)
+        if tissue in tissues:
+            os.makedirs(folder, exist_ok=True)
+            shutil.copy(bed_file, folder)
+
+            nonegvalues(os.path.join(folder, file), os.path.join(folder, 'nn_' + file), os.path.join(folder, 'out'))
+            file_name = os.path.splitext(file)[0]
+            bedtoolIntersect('CREbedDBenhancers_10092018', os.path.join(folder, 'nn_' + file), os.path.join(folder, 'nn_' + file_name + '_intersect'))
+            HGNC2PANTH(os.path.join(folder, 'nn_' + file_name + '_intersect'), os.path.join(folder, file_name + '_out'), id_output_file, os.path.join(folder, 'unmatched'), tissue)
+            reformat(os.path.join(folder, file_name + '_out'), os.path.join(folder, 'intTADlinks_' + file_name))
+            tissuesReplace(os.path.join(folder, 'intTADlinks_' + file_name), os.path.join(folder,  file_name + '_DB'))
+            db_files.append(os.path.join(folder,  file_name + '_DB'))
+
+    concatenate(db_files, os.path.join(target_path, 'PSYCHIClinksDB'))

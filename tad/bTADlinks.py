@@ -1,4 +1,9 @@
 from collections import defaultdict
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
 
 def TADlinks(gene_file, enhancer_tad_file, output_file):
     '''
@@ -42,18 +47,24 @@ def TADlinks_write_to_file(tadenh, tadgenes, output_file, start_idx, end_idx):
                         if enh and panthID and cell:
                             out.write(f"{enh}\t{panthID}\t{cell}\t3\n")
 
-panther_mapping = {}
-with open('pantherGeneList.txt', 'r') as pantherGene_file:
-    for line in pantherGene_file:
-        line_split = line.strip().split('\t')
-        panth = line_split[0]
-        ensg = line_split[1]
-        panther_mapping[ensg] = panth
+if __name__ == "__main__":
 
-chromosomes = ['chr' + str(x) for x in range(1, 23)]
-chromosomes.append('chrX')
-chromosomes.append('chrY')
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
 
-for chr in chromosomes:
-    TADlinks(chr+'TSSbTAD', chr+'enhancersbTAD', chr+'linksbTAD')
+    panther_mapping = {}
+    with open('pantherGeneList.txt', 'r') as pantherGene_file:
+        for line in pantherGene_file:
+            line_split = line.strip().split('\t')
+            panth = line_split[0]
+            ensg = line_split[1]
+            panther_mapping[ensg] = panth
+
+    chromosomes = ['chr' + str(x) for x in range(1, 23)]
+    chromosomes.append('chrX')
+    chromosomes.append('chrY')
+
+    for chr in chromosomes:
+        TADlinks(os.path.join(target_path, chr+'TSSbTAD'), os.path.join(target_path, chr+'enhancersbTAD'), os.path.join(target_path, chr+'linksbTAD'))
 

@@ -1,4 +1,9 @@
 from math import floor, ceil
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
 
 def bTADoverlap(input_file, output_file, cell_type):
     tad_file = open(input_file, 'r')
@@ -41,5 +46,12 @@ def tTADOverlap(input_file, output_file, cell_type):
         out.write(f"{chr}\t{start}\t{end}\t{location}\t{score}\n")
     out.close()
 
-bTADoverlap('ENCFF274VJU.bed', 'bTADorder', 'Caki2')
-tTADOverlap('ENCFF588KUZ.bed', 'tTADorder', 'Caki2')
+
+if __name__ == "__main__":
+
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
+
+    bTADoverlap('tad/ENCFF274VJU.bed', os.path.join(target_path, 'bTADorder'), 'Caki2')
+    tTADOverlap('tad/ENCFF588KUZ.bed', os.path.join(target_path, 'tTADorder'), 'Caki2')

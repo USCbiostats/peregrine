@@ -1,3 +1,9 @@
+import argparse
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('target_path')
+
 def orderlinks(input_file, output_file):
     hash = {}
     tissues = {}
@@ -20,4 +26,10 @@ def orderlinks(input_file, output_file):
 
     print(f"This file contains {len(hash)} different enhancers linked to {len(genes)} genes in {len(tissues)} tissues.")
 
-orderlinks('selectTAD', 'linksDBtad')
+if __name__ == "__main__":
+
+    args = parser.parse_args()
+    target_path = args.target_path
+    os.makedirs(target_path, exist_ok=True)
+
+    orderlinks(os.path.join(target_path, 'selectTAD'), os.path.join(target_path, 'linksDBtad'))
