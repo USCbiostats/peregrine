@@ -17,7 +17,7 @@ This final data is coming from 4 different data sources.
 The above folders contain the data, code and details for each of the data sources. 
 
 
-The exon file has been generated using exon_processing.py. Data was downloaded from https://grch37.ensembl.org/biomart/martview/f4c200b649ceea16a7db20ec6e44b8f4 and the file was renamed as exon_file_default.txt. The patch chromosome mapping has been taken from https://www.biostars.org/p/106355/. Then the following command is run to get exons_genes.txt which is used in the eQTL code and placed in that folder. 
+The exon file has been generated using exon_processing.py. Data was downloaded from https://grch37.ensembl.org/biomart/martview/f4c200b649ceea16a7db20ec6e44b8f4 ([details here](README_exon_file_default.txt.md)) and the file was renamed as exon_file_default.txt. The patch chromosome mapping has been taken from https://www.biostars.org/p/106355/. Then the following command is run to get exons_genes.txt which is used in the eQTL code and placed in that folder. 
 ```
 python3 exon_processing.py exon_file_default.txt patch_chromosome_mapping.txt exons_genes.txt
 ```
