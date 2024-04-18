@@ -171,7 +171,7 @@ if __name__ == "__main__":
             tissues[tissue] = tissueID
 
     id_output_file = os.path.join(target_path, 'resultsHGNC.txt')
-    # idmapping_processing(id_output_file)
+    idmapping_processing(id_output_file)
 
     bed_files = glob.glob(os.path.join('heirarchicalTAD/data', '*'))
     db_files = []
